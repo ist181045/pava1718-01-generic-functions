@@ -31,7 +31,7 @@
 apply plugin: 'application'
 
 configurations {
-  jar.archiveName = 'genericFunctions.jar'
+  jar.baseName = 'genericFunctions'
 }
 
 dependencies {
