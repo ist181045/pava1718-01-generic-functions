@@ -23,10 +23,14 @@
  */
 
 apply plugin: 'application'
-mainClassName = 'pt.ist.meic.ap.GenericFunctions.WithGenericFunctions'
 
 run {
-  standardInput = System.in
+  main = 'pt.ist.meic.ap.GenericFunctions.WithGenericFunctions'
+  args = [
+      'ProgramClassName',
+      'Program',
+      'Arguments'
+  ]
 }
 
 configurations {
