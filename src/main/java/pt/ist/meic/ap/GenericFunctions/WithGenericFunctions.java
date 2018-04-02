@@ -22,34 +22,11 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
-mainClassName = 'pt.ist.meic.ap.GenericFunctions.WithGenericFunctions'
+package pt.ist.meic.ap.GenericFunctions;
 
-run {
-  standardInput = System.in
-}
+public class WithGenericFunctions {
 
-configurations {
-  archivesBaseName = 'genericFunctions'
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
-
-repositories {
-  mavenCentral()
-}
-
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
-
-  from project.rootDir
-  into 'g01'
-
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
+  public static void main(String[] args) {
+    // TODO: Everything
+  }
 }
