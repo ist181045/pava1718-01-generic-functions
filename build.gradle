@@ -24,6 +24,9 @@
 
 apply plugin: 'application'
 
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 run {
   main = 'pt.ist.meic.ap.GenericFunctions.WithGenericFunctions'
   args = [
@@ -33,10 +36,8 @@ run {
   ]
 }
 
-configurations {
-  archivesBaseName = 'genericFunctions'
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
+jar {
+  baseName = 'genericFunctions'
 }
 
 dependencies {
