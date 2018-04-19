@@ -22,15 +22,17 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.function.Com;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+public class TestD {
 
+  public static void main(String[] args) {
+    Object objects = new Object[]{"Foo", new Integer[]{123, -12}};
+    System.out.println(Com.bine(objects));
+
+    Object numbers = new Object[]{123, new Integer[]{456, 21}};
+    System.out.println(Com.bine(numbers));
+  }
 }

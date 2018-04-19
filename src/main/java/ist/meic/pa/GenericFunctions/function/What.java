@@ -22,15 +22,44 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.function;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.AfterMethod;
+import ist.meic.pa.GenericFunctions.BeforeMethod;
+import ist.meic.pa.GenericFunctions.GenericFunction;
+import ist.meic.pa.GenericFunctions.domain.Black;
+import ist.meic.pa.GenericFunctions.domain.Blue;
+import ist.meic.pa.GenericFunctions.domain.Red;
+import ist.meic.pa.GenericFunctions.domain.SuperBlack;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+@GenericFunction
+public class What {
 
+  public static void is(Black i) {
+    System.out.print("What is black? ");
+  }
+
+  public static void is(Red i) {
+    System.out.print("What is red? ");
+  }
+
+  @BeforeMethod
+  public static void is(Blue o) {
+    System.out.println("Blue ");
+  }
+
+  @AfterMethod
+  public static void is(Object o) {
+    System.out.print(" Is it an object?");
+  }
+
+  @AfterMethod
+  public static void is(Color o) {
+    System.out.print(" Is it a color?");
+  }
+
+  @AfterMethod
+  public static void is(SuperBlack o) {
+    System.out.print(" It is all of that and much more...");
+  }
 }

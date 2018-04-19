@@ -22,15 +22,14 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.function.Identify;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+public class TestE {
 
+  public static void main(String[] args) {
+    Object objects = new Object[]{123, "Foo", 1.2};
+    System.out.println(Identify.it(objects));
+  }
 }

@@ -22,15 +22,25 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.function.ArrayCom;
+import java.util.Arrays;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+public class TestG {
 
+  public static void main(String[] args) {
+    println(ArrayCom.bine(1, 3));
+    println(ArrayCom.bine(new Object[]{1, 2, 3}, new Object[]{4, 5, 6}));
+    println(ArrayCom.bine(new Object[]{new Object[]{1, 2}, 3},
+        new Object[]{new Object[]{3, 4}, 5}));
+  }
+
+  public static void println(Object obj) {
+    if (obj instanceof Object[]) {
+      System.out.println(Arrays.deepToString((Object[]) obj));
+    } else {
+      System.out.println(obj);
+    }
+  }
 }

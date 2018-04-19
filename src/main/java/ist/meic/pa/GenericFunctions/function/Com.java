@@ -22,15 +22,60 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.function;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.GenericFunction;
+import java.util.Vector;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+@GenericFunction
+public interface Com {
 
+  // Test B and D
+  public static Object bine(Object a) {
+    return "Object";
+  }
+
+  public static String bine(String a) {
+    return a;
+  }
+
+  public static Integer bine(Integer a) {
+    return a;
+  }
+
+  public static Object bine(Object[] arr) {
+    StringBuilder res = new StringBuilder();
+    for (Object o : arr) {
+      res.append(bine(o));
+    }
+    return res.toString();
+  }
+
+  public static Object bine(Integer[] arr) {
+    int res = 0;
+    for (int o : arr) {
+      res += bine(o);
+    }
+    return res;
+  }
+
+  // Test 17
+  public static Object bine(Object a, Object b) {
+    Vector<Object> v = new Vector<>();
+    v.add(a);
+    v.add(b);
+    return v;
+  }
+
+  public static Integer bine(Integer a, Integer b) {
+    return a + b;
+  }
+
+  public static Object bine(String a, Object b) {
+    return a + ", " + b + "!";
+  }
+
+  public static Object bine(String a, Integer b) {
+    return (b == 0) ? "" : a + bine(a, b - 1);
+  }
 }

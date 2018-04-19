@@ -22,15 +22,30 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.function;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.GenericFunction;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+@GenericFunction
+public class Identify {
 
+  public static String it(Object o) {
+    return "Object";
+  }
+
+  public static String it(String s) {
+    return "String";
+  }
+
+  private static String it(Integer a) {
+    return "Integer";
+  }
+
+  public static String it(Object[] arr) {
+    StringBuilder res = new StringBuilder();
+    for (Object o : arr) {
+      res.append(it(o));
+    }
+    return res.toString();
+  }
 }

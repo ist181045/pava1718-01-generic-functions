@@ -22,15 +22,32 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.function;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.AfterMethod;
+import ist.meic.pa.GenericFunctions.BeforeMethod;
+import ist.meic.pa.GenericFunctions.GenericFunction;
+import ist.meic.pa.GenericFunctions.domain.C1;
+import ist.meic.pa.GenericFunctions.domain.Foo;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+@GenericFunction
+public class MakeIt {
+
+  public static void ddouble(C1 c) {
+    System.out.println("C1");
+  }
+
+  @BeforeMethod
+  @AfterMethod
+  public static void ddouble(Object c) {
+    System.out.println("Object");
+  }
+
+  @BeforeMethod
+  @AfterMethod
+  public static void ddouble(Foo c) {
+    System.out.println("Foo");
+  }
 
 }
+

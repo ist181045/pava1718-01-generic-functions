@@ -22,15 +22,19 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.domain.Red;
+import ist.meic.pa.GenericFunctions.domain.SuperBlack;
+import ist.meic.pa.GenericFunctions.function.Color;
+import ist.meic.pa.GenericFunctions.function.What;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+public class TestI {
 
+  public static void main(String[] args) {
+    Object[] colors = new Color[]{new SuperBlack(), new Red()};
+    for (Object o : colors) {
+      What.is(o);
+    }
+  }
 }

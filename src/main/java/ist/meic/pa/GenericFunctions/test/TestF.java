@@ -22,15 +22,17 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.domain.C1;
+import ist.meic.pa.GenericFunctions.domain.C2;
+import ist.meic.pa.GenericFunctions.function.Bug;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+public class TestF {
 
+  public static void main(String[] args) {
+    Object c1 = new C1(), c2 = new C2();
+    Bug.bug(c1);
+    Bug.bug(c2);
+  }
 }

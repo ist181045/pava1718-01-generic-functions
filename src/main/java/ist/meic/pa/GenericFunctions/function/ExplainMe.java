@@ -22,15 +22,38 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.function;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ist.meic.pa.GenericFunctions.AfterMethod;
+import ist.meic.pa.GenericFunctions.BeforeMethod;
+import ist.meic.pa.GenericFunctions.GenericFunction;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+@GenericFunction
+public class ExplainMe {
 
+  @AfterMethod
+  public static void twoThings(Number o1, Number o2) {
+    System.out.println("Sniff, Sniff! Why am I the last? I'm more specific than Obj-Obj!");
+  }
+
+  @AfterMethod
+  public static void twoThings(Object o1, Object o2) {
+    System.out.println("Muahaha! I knew I would run after the primary!");
+  }
+
+  public static void twoThings(Number o1, Integer o2) {
+    System.out.println("Woho!! I'm the primary!");
+
+  }
+
+  @BeforeMethod
+  public static void twoThings(Integer o1, Number o2) {
+    System.out.println("How come Integer-Integer is more specific than me?");
+  }
+
+  @BeforeMethod
+  public static void twoThings(Integer o1, Integer o2) {
+    System.out.println("Let me be the first!");
+
+  }
 }

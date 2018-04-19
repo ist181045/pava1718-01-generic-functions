@@ -22,15 +22,26 @@
  * SOFTWARE.
  */
 
-package ist.meic.pa.GenericFunctions;
+package ist.meic.pa.GenericFunctions.test;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GenericFunction {
+import ist.meic.pa.GenericFunctions.function.ArrayCom;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
+public class TestK {
+
+  public static void main(String[] args) {
+    List<Object> a = new ArrayList<>();
+    a.add("Hello");
+    a.add(1);
+    a.add('A');
+
+    List<Object> b = new LinkedList<>();
+    b.add(2);
+    b.add('B');
+
+    System.out.println(ArrayCom.bine(a, b));
+  }
 }
