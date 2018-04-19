@@ -27,10 +27,11 @@ apply plugin: 'application'
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+
 run {
   main = mainClassName
   args = [
-      'Example',
+      'ist.meic.pa.GenericFunctions.test.TestL',
   ]
 }
 
