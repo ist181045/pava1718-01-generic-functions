@@ -22,39 +22,44 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.function;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.AfterMethod;
+import ist.meic.pa.GenericFunctions.BeforeMethod;
+import ist.meic.pa.GenericFunctions.GenericFunction;
+import ist.meic.pa.GenericFunctions.internal.domain.Black;
+import ist.meic.pa.GenericFunctions.internal.domain.Blue;
+import ist.meic.pa.GenericFunctions.internal.domain.Red;
+import ist.meic.pa.GenericFunctions.internal.domain.SuperBlack;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+@GenericFunction
+public class What {
 
-jar {
-  baseName = 'genericFunctions'
-}
+  public static void is(Black i) {
+    System.out.print("What is black? ");
+  }
 
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
+  public static void is(Red i) {
+    System.out.print("What is red? ");
+  }
 
-repositories {
-  mavenCentral()
-}
+  @BeforeMethod
+  public static void is(Blue o) {
+    System.out.println("Blue ");
+  }
 
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
+  @AfterMethod
+  public static void is(Object o) {
+    System.out.print(" Is it an object?");
+  }
 
-  from project.rootDir
-  into 'g01'
+  @AfterMethod
+  public static void is(Color o) {
+    System.out.print(" Is it a color?");
+  }
 
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+  @AfterMethod
+  public static void is(SuperBlack o) {
+    System.out.print(" It is all of that and much more...");
+  }
 }

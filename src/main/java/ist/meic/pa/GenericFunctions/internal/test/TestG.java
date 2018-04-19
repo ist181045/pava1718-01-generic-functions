@@ -22,39 +22,25 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.test;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.internal.function.ArrayCom;
+import java.util.Arrays;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+public class TestG {
 
-jar {
-  baseName = 'genericFunctions'
-}
+  public static void main(String[] args) {
+    println(ArrayCom.bine(1, 3));
+    println(ArrayCom.bine(new Object[]{1, 2, 3}, new Object[]{4, 5, 6}));
+    println(ArrayCom.bine(new Object[]{new Object[]{1, 2}, 3},
+        new Object[]{new Object[]{3, 4}, 5}));
+  }
 
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
-
-repositories {
-  mavenCentral()
-}
-
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
-
-  from project.rootDir
-  into 'g01'
-
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+  public static void println(Object obj) {
+    if (obj instanceof Object[]) {
+      System.out.println(Arrays.deepToString((Object[]) obj));
+    } else {
+      System.out.println(obj);
+    }
+  }
 }

@@ -22,39 +22,25 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.function;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.GenericFunction;
+import ist.meic.pa.GenericFunctions.internal.domain.Bar;
+import ist.meic.pa.GenericFunctions.internal.domain.Foo;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+@GenericFunction
+public class Bug {
 
-jar {
-  baseName = 'genericFunctions'
-}
+  // Test F
+  public static void bug(Object o) {
+    System.out.println("Object");
+  }
 
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
+  public static void bug(Foo f) {
+    System.out.println("Foo");
+  }
 
-repositories {
-  mavenCentral()
-}
-
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
-
-  from project.rootDir
-  into 'g01'
-
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+  public static void bug(Bar b) {
+    System.out.println("Bar");
+  }
 }

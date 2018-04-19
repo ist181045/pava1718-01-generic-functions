@@ -22,39 +22,34 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.function;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.AfterMethod;
+import ist.meic.pa.GenericFunctions.BeforeMethod;
+import ist.meic.pa.GenericFunctions.GenericFunction;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+@GenericFunction
+public interface Explain {
 
-jar {
-  baseName = 'genericFunctions'
-}
+  public static void it(Integer i) {
+    System.out.print(i + " is an integer");
+  }
 
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
+  public static void it(Double i) {
+    System.out.print(i + " is a double");
+  }
 
-repositories {
-  mavenCentral()
-}
+  public static void it(String s) {
+    System.out.print(s + " is a string");
+  }
 
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
+  @BeforeMethod
+  public static void it(Number n) {
+    System.out.print("The number");
+  }
 
-  from project.rootDir
-  into 'g01'
-
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+  @AfterMethod
+  public static void it(Object o) {
+    System.out.println(".");
+  }
 }

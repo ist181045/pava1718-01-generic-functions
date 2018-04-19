@@ -22,39 +22,19 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.test;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.internal.domain.Red;
+import ist.meic.pa.GenericFunctions.internal.domain.SuperBlack;
+import ist.meic.pa.GenericFunctions.internal.function.Color;
+import ist.meic.pa.GenericFunctions.internal.function.What;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+public class TestI {
 
-jar {
-  baseName = 'genericFunctions'
-}
-
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
-
-repositories {
-  mavenCentral()
-}
-
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
-
-  from project.rootDir
-  into 'g01'
-
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+  public static void main(String[] args) {
+    Object[] colors = new Color[]{new SuperBlack(), new Red()};
+    for (Object o : colors) {
+      What.is(o);
+    }
+  }
 }

@@ -22,39 +22,60 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.function;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.GenericFunction;
+import java.util.Vector;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+@GenericFunction
+public interface Com {
 
-jar {
-  baseName = 'genericFunctions'
-}
+  // Test B and D
+  public static Object bine(Object a) {
+    return "Object";
+  }
 
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
+  public static String bine(String a) {
+    return a;
+  }
 
-repositories {
-  mavenCentral()
-}
+  public static Integer bine(Integer a) {
+    return a;
+  }
 
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
+  public static Object bine(Object[] arr) {
+    StringBuilder res = new StringBuilder();
+    for (Object o : arr) {
+      res.append(bine(o));
+    }
+    return res.toString();
+  }
 
-  from project.rootDir
-  into 'g01'
+  public static Object bine(Integer[] arr) {
+    int res = 0;
+    for (int o : arr) {
+      res += bine(o);
+    }
+    return res;
+  }
 
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+  // Test 17
+  public static Object bine(Object a, Object b) {
+    Vector<Object> v = new Vector<>();
+    v.add(a);
+    v.add(b);
+    return v;
+  }
+
+  public static Integer bine(Integer a, Integer b) {
+    return a + b;
+  }
+
+  public static Object bine(String a, Object b) {
+    return a + ", " + b + "!";
+  }
+
+  public static Object bine(String a, Integer b) {
+    return (b == 0) ? "" : a + bine(a, b - 1);
+  }
 }

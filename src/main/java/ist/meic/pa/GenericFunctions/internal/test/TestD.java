@@ -22,39 +22,17 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.test;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.internal.function.Com;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+public class TestD {
 
-jar {
-  baseName = 'genericFunctions'
-}
+  public static void main(String[] args) {
+    Object objects = new Object[]{"Foo", new Integer[]{123, -12}};
+    System.out.println(Com.bine(objects));
 
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
-
-repositories {
-  mavenCentral()
-}
-
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
-
-  from project.rootDir
-  into 'g01'
-
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+    Object numbers = new Object[]{123, new Integer[]{456, 21}};
+    System.out.println(Com.bine(numbers));
+  }
 }

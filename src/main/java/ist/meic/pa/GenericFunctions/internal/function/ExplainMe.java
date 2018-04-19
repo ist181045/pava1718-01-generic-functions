@@ -22,39 +22,38 @@
  * SOFTWARE.
  */
 
-apply plugin: 'application'
+package ist.meic.pa.GenericFunctions.internal.function;
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
+import ist.meic.pa.GenericFunctions.AfterMethod;
+import ist.meic.pa.GenericFunctions.BeforeMethod;
+import ist.meic.pa.GenericFunctions.GenericFunction;
 
-run {
-  main = mainClassName
-  args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
-  ]
-}
+@GenericFunction
+public class ExplainMe {
 
-jar {
-  baseName = 'genericFunctions'
-}
+  @AfterMethod
+  public static void twoThings(Number o1, Number o2) {
+    System.out.println("Sniff, Sniff! Why am I the last? I'm more specific than Obj-Obj!");
+  }
 
-dependencies {
-  implementation 'org.javassist:javassist:3.22.0-GA'
-}
+  @AfterMethod
+  public static void twoThings(Object o1, Object o2) {
+    System.out.println("Muahaha! I knew I would run after the primary!");
+  }
 
-repositories {
-  mavenCentral()
-}
+  public static void twoThings(Number o1, Integer o2) {
+    System.out.println("Woho!! I'm the primary!");
 
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
-    description: 'Creates a zip archive for project submission') {
-  baseName = 'project'
+  }
 
-  from project.rootDir
-  into 'g01'
+  @BeforeMethod
+  public static void twoThings(Integer o1, Number o2) {
+    System.out.println("How come Integer-Integer is more specific than me?");
+  }
 
-  include 'build.gradle'
-  include sourceSets.main.java.collect { relativePath(it) }
-  exclude '**/internal'
+  @BeforeMethod
+  public static void twoThings(Integer o1, Integer o2) {
+    System.out.println("Let me be the first!");
+
+  }
 }
