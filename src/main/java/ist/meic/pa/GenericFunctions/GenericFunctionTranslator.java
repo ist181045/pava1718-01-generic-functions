@@ -24,8 +24,16 @@
 
 package ist.meic.pa.GenericFunctions;
 
+import ist.meic.pa.GenericFunctions.util.Pair;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.Translator;
 
@@ -39,6 +47,33 @@ class GenericFunctionTranslator implements Translator {
   @Override
   public void onLoad(ClassPool pool, String classname)
       throws NotFoundException, CannotCompileException {
-    // TODO: Instrument generic functions
+    try {
+      CtClass ctClass = pool.get(classname);
+      if (ctClass.getAnnotation(GenericFunction.class) != null) {
+        int mods = ctClass.getModifiers();
+        if (!Modifier.isPublic(mods)) {
+          ctClass.setModifiers(Modifier.setPublic(mods));
+        }
+        makeGeneric(ctClass);
+        ctClass.setModifiers(mods);
+      }
+    } catch (ClassNotFoundException ignored) {
+    }
   }
+
+  private void makeGeneric(CtClass ctClass) throws NotFoundException, CannotCompileException {
+    Map<Pair<String, Integer>, SortedSet<CtMethod>> map = new HashMap<>();
+
+    for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
+      Pair<String, Integer> pair = new Pair<>(ctMethod.getName(),
+          ctMethod.getParameterTypes().length);
+      map.computeIfAbsent(pair, k -> new TreeSet<>(new CtMethodComparator()));
+      map.get(pair).add(ctMethod);
+    }
+
+    for (Pair<String, Integer> pair : map.keySet()) {
+      // TODO: Figure out how to.. do the interesting bit :\
+    }
+  }
+
 }
