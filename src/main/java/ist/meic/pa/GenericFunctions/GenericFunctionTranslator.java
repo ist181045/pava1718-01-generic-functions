@@ -24,29 +24,21 @@
 
 package ist.meic.pa.GenericFunctions;
 
+import javassist.CannotCompileException;
 import javassist.ClassPool;
-import javassist.Loader;
+import javassist.NotFoundException;
+import javassist.Translator;
 
-public class WithGenericFunctions {
+class GenericFunctionTranslator implements Translator {
 
-  public static void main(String[] args) throws Throwable {
-    if (args.length < 1) {
-      System.err.printf("Usage: java %s <class name> [args]%n",
-          WithGenericFunctions.class.getSimpleName());
-      System.exit(1);
-    } else {
-      String className = args[0];
-      if (!className.contains(".")) {
-        className = WithGenericFunctions.class.getPackage().getName() + "." + className;
-      }
-
-      Loader loader = new Loader();
-      loader.addTranslator(ClassPool.getDefault(), new GenericFunctionTranslator());
-
-      String[] rest = new String[args.length - 1];
-      System.arraycopy(args, 1, rest, 0, rest.length);
-      loader.run(className, rest);
-    }
+  @Override
+  public void start(ClassPool pool) {
+    // unused
   }
 
+  @Override
+  public void onLoad(ClassPool pool, String classname)
+      throws NotFoundException, CannotCompileException {
+    // TODO: Instrument generic functions
+  }
 }
