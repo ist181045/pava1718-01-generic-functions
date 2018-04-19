@@ -31,21 +31,16 @@ public class WithGenericFunctions {
 
   public static void main(String[] args) throws Throwable {
     if (args.length < 1) {
-      System.err.printf("Usage: java %s <class name> [args]%n",
+      System.err.printf("Usage: java %s <fq class name> [args]%n",
           WithGenericFunctions.class.getSimpleName());
       System.exit(1);
     } else {
-      String className = args[0];
-      if (!className.contains(".")) {
-        className = WithGenericFunctions.class.getPackage().getName() + "." + className;
-      }
-
       Loader loader = new Loader();
       loader.addTranslator(ClassPool.getDefault(), new GenericFunctionTranslator());
 
       String[] rest = new String[args.length - 1];
       System.arraycopy(args, 1, rest, 0, rest.length);
-      loader.run(className, rest);
+      loader.run(args[0], rest);
     }
   }
 
