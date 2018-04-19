@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package pt.ist.meic.ap.GenericFunctions;
+package ist.meic.pa.GenericFunctions;
 
 public class WithGenericFunctions {
 

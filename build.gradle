@@ -28,7 +28,7 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 run {
-  main = 'pt.ist.meic.ap.GenericFunctions.WithGenericFunctions'
+  main = 'ist.ist.meic.pa.GenericFunctions.WithGenericFunctions'
   args = [
       'ProgramClassName',
       'Program',
