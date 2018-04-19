@@ -26,5 +26,8 @@ gradle-app.settings
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 
+# Compilation results
+out/
+
 ## File-based project format:
 *.iws
