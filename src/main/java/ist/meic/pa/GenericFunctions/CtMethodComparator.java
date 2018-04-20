@@ -50,14 +50,14 @@ class CtMethodComparator implements Comparator<CtMethod> {
         }
 
         if (p1.subclassOf(p2)) {
-          return 1;
-        } else if (p2.subclassOf(p1)) {
           return -1;
+        } else if (p2.subclassOf(p1)) {
+          return 1;
         }
       }
     } catch (NotFoundException ignored) {
     }
 
-    return 1;
+    return -1;
   }
 }
