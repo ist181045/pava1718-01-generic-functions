@@ -24,21 +24,11 @@
 
 package ist.meic.pa.GenericFunctions;
 
-import ist.meic.pa.GenericFunctions.util.Pair;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Stream;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
 import javassist.NotFoundException;
 import javassist.Translator;
-import javassist.bytecode.analysis.Type;
 
 class GenericFunctionTranslator implements Translator {
 
@@ -51,60 +41,16 @@ class GenericFunctionTranslator implements Translator {
   public void onLoad(ClassPool pool, String className)
       throws NotFoundException, CannotCompileException {
     try {
-      CtClass oldClass = pool.get(className);
-      if (oldClass.getAnnotation(GenericFunction.class) != null) {
-        CtClass newClass = pool.makeClass(oldClass.getName());
-        oldClass.setName(oldClass.getName() + "$orig");
-        makeGeneric(oldClass, newClass);
+      CtClass target = pool.get(className);
+      if (target.getAnnotation(GenericFunction.class) != null) {
+        makeGeneric(target);
       }
     } catch (ClassNotFoundException cnfe) {
       throw new RuntimeException(cnfe);
     }
   }
 
-  private void makeGeneric(CtClass oldClass, CtClass newClass)
-      throws NotFoundException, CannotCompileException {
-    Map<Pair<String, Integer>, SortedSet<CtMethod>> ctMethodsMap = new HashMap<>();
-    Stream<CtMethod> methods = Arrays.stream(oldClass.getDeclaredMethods());
-    Stream<CtMethod> candidates = methods
-        .filter(this::filterBeforeAndAfter);
-
-    candidates.forEach(m -> aggregateMethods(m, ctMethodsMap));
-
-    CtClass objectType = Type.OBJECT.getCtClass();
-    for (Pair<String, Integer> pair : ctMethodsMap.keySet()) {
-      CtMethod leastSpecific = ctMethodsMap.get(pair).last();
-      CtClass[] params = new CtClass[pair.second()];
-      for (int i = 0; i < params.length; i++) {
-        params[i] = objectType;
-      }
-      // TODO: Actually instrument method
-      newClass.addMethod(
-          CtNewMethod.make(leastSpecific.getModifiers(), objectType, pair.first(),
-              params, leastSpecific.getExceptionTypes(), "{ return \"HACKED\"; }", newClass)
-      );
-    }
-  }
-
-  private void aggregateMethods(CtMethod ctMethod,
-      Map<Pair<String, Integer>, SortedSet<CtMethod>> ctMethodsMap) {
-    try {
-      Pair<String, Integer> pair = new Pair<>(ctMethod.getName(),
-          ctMethod.getParameterTypes().length);
-      ctMethodsMap.computeIfAbsent(pair, k -> new TreeSet<>(new CtMethodComparator()))
-          .add(ctMethod);
-    } catch (NotFoundException nfe) {
-      throw new RuntimeException(nfe);
-    }
-  }
-
-  private boolean filterBeforeAndAfter(CtMethod ctMethod) {
-    try {
-      Object before = ctMethod.getAnnotation(BeforeMethod.class);
-      Object after = ctMethod.getAnnotation(AfterMethod.class);
-      return before == null && after == null;
-    } catch (ClassNotFoundException e) {
-      return true;
-    }
+  private void makeGeneric(CtClass target) throws NotFoundException, CannotCompileException {
+    // Rehash, starting over
   }
 }
