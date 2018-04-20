@@ -45,24 +45,28 @@ class GenericFunctionTranslator implements Translator {
   }
 
   @Override
-  public void onLoad(ClassPool pool, String classname)
+  public void onLoad(ClassPool pool, String className)
       throws NotFoundException, CannotCompileException {
     try {
-      CtClass ctClass = pool.get(classname);
-      if (ctClass.getAnnotation(GenericFunction.class) != null) {
-        int mods = ctClass.getModifiers();
-        if (!Modifier.isPublic(mods)) {
-          ctClass.setModifiers(Modifier.setPublic(mods));
-        }
-        makeGeneric(ctClass);
-        ctClass.setModifiers(mods);
+      CtClass oldClass = pool.get(className);
+      if (oldClass.getAnnotation(GenericFunction.class) != null) {
+        CtClass newClass = pool.makeClass(oldClass.getName());
+        oldClass.setName(oldClass.getName() + "$orig");
+        makeGeneric(oldClass, newClass);
       }
-    } catch (ClassNotFoundException ignored) {
+    } catch (ClassNotFoundException cnfe) {
+      throw new RuntimeException(cnfe);
     }
   }
 
-  private void makeGeneric(CtClass ctClass) throws NotFoundException, CannotCompileException {
-    Map<Pair<String, Integer>, SortedSet<CtMethod>> map = new HashMap<>();
+  private void makeGeneric(CtClass oldClass, CtClass newClass)
+      throws NotFoundException, CannotCompileException {
+    Map<Pair<String, Integer>, SortedSet<CtMethod>> ctMethodsMap = new HashMap<>();
+    Stream<CtMethod> methods = Arrays.stream(oldClass.getDeclaredMethods());
+    Stream<CtMethod> candidates = methods
+        .filter(this::filterBeforeAndAfter);
+
+    candidates.forEach(m -> aggregateMethods(m, ctMethodsMap));
 
     for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
       Pair<String, Integer> pair = new Pair<>(ctMethod.getName(),
@@ -71,9 +75,13 @@ class GenericFunctionTranslator implements Translator {
       map.get(pair).add(ctMethod);
     }
 
-    for (Pair<String, Integer> pair : map.keySet()) {
-      // TODO: Figure out how to.. do the interesting bit :\
+  private boolean filterBeforeAndAfter(CtMethod ctMethod) {
+    try {
+      Object before = ctMethod.getAnnotation(BeforeMethod.class);
+      Object after = ctMethod.getAnnotation(AfterMethod.class);
+      return before == null && after == null;
+    } catch (ClassNotFoundException e) {
+      return true;
     }
   }
-
 }
