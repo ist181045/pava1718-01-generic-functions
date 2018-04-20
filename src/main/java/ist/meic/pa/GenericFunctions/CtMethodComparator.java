@@ -50,17 +50,11 @@ class CtMethodComparator implements Comparator<CtMethod> {
           p2 = p2.getComponentType();
         }
         if (p1.isArray() || p2.isArray()) {
-          return p1.isArray() ? 1 : -1;
-        }
-
-        if (p1.equals(p2)) {
-          continue;
-        }
-
-        if (p1.subclassOf(p2)) {
-          return -1;
-        } else if (p2.subclassOf(p1)) {
           return 1;
+        }
+
+        if (!p1.equals(p2)) {
+          return p1.subclassOf(p2) ? -1 : 1;
         }
       }
     } catch (NotFoundException ignored) {
