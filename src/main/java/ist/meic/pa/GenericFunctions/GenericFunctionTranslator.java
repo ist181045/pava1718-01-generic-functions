@@ -40,13 +40,9 @@ class GenericFunctionTranslator implements Translator {
   @Override
   public void onLoad(ClassPool pool, String className)
       throws NotFoundException, CannotCompileException {
-    try {
-      CtClass target = pool.get(className);
-      if (target.getAnnotation(GenericFunction.class) != null) {
-        makeGeneric(target);
-      }
-    } catch (ClassNotFoundException cnfe) {
-      throw new RuntimeException(cnfe);
+    CtClass target = pool.get(className);
+    if (target.hasAnnotation(GenericFunction.class)) {
+      makeGeneric(target);
     }
   }
 
