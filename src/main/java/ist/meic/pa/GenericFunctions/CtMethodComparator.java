@@ -45,6 +45,14 @@ class CtMethodComparator implements Comparator<CtMethod> {
         CtClass p1 = params1[i];
         CtClass p2 = params2[i];
 
+        while (p1.isArray() && p2.isArray()) {
+          p1 = p1.getComponentType();
+          p2 = p2.getComponentType();
+        }
+        if (p1.isArray() || p2.isArray()) {
+          return p1.isArray() ? 1 : -1;
+        }
+
         if (p1.equals(p2)) {
           continue;
         }
@@ -58,6 +66,6 @@ class CtMethodComparator implements Comparator<CtMethod> {
     } catch (NotFoundException ignored) {
     }
 
-    return -1;
+    return 0;
   }
 }
