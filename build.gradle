@@ -31,7 +31,7 @@ mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
 run {
   main = mainClassName
   args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestL',
+      'ist.meic.pa.GenericFunctions.internal.test.TestP',
   ]
 }
 
@@ -47,7 +47,7 @@ repositories {
   mavenCentral()
 }
 
-task submit(type: Zip, group: 'Archive', dependsOn: jar,
+task 'package' (type: Zip, group: 'Archive', dependsOn: jar,
     description: 'Creates a zip archive for project submission') {
   baseName = 'project'
 
