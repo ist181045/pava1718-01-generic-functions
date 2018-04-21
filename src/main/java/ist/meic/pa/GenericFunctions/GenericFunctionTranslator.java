@@ -24,7 +24,6 @@
 
 package ist.meic.pa.GenericFunctions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -54,10 +53,10 @@ public class GenericFunctionTranslator implements Translator {
       // long start = System.currentTimeMillis();
       makeGeneric(target);
       // System.out.println(System.currentTimeMillis() - start);
-      try {
-        target.writeFile();
-      } catch (IOException ignored) {
-      }
+      // try {
+      //   target.writeFile();
+      // } catch (IOException ignored) {
+      // }
     }
   }
 
