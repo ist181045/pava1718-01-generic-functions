@@ -17,6 +17,8 @@ gradle-app.settings
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
+# Gradle keeps changing this bugger..
+.idea/.name
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
