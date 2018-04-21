@@ -29,7 +29,7 @@ import java.util.Arrays;
 
 public class ReflectiveMagic {
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unused")
   public static Object invoke(Object receiver, String name, Object... args) {
     Class<?>[] argTypes = Arrays.stream(args).map(Object::getClass).toArray(Class[]::new);
 
