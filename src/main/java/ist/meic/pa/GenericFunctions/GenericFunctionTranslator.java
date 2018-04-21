@@ -24,18 +24,22 @@
 
 package ist.meic.pa.GenericFunctions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.CtNewMethod;
+import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.Translator;
 
-class GenericFunctionTranslator implements Translator {
+public class GenericFunctionTranslator implements Translator {
+
+  private static final String SUFFIX_PRIMARY = "primary";
 
   @Override
   public void start(ClassPool pool) {
@@ -50,33 +54,57 @@ class GenericFunctionTranslator implements Translator {
       // long start = System.currentTimeMillis();
       makeGeneric(target);
       // System.out.println(System.currentTimeMillis() - start);
-      // try {
-      //   target.writeFile();
-      // } catch (IOException ignored) {
-      // }
-    }
-  }
-
-  private void makeGeneric(CtClass function) throws NotFoundException, CannotCompileException {
-    ArrayList<CtMethod> methods = Arrays.stream(function.getDeclaredMethods())
-        .sorted((o1, o2) -> canDowncastTo(o1, o2) ? -1 : 1) // Least specific first
-        .collect(Collectors.toCollection(ArrayList::new));
-
-    while (methods.size() > 0) {
-      CtMethod leastSpecific = methods.remove(0);
-
-      for (CtMethod target : methods) {
-        if (!(target.hasAnnotation(BeforeMethod.class)
-            || target.hasAnnotation(AfterMethod.class))) {
-          if (canDowncastTo(leastSpecific, target)) {
-            instrument(leastSpecific, target, methods);
-          }
-        }
+      try {
+        target.writeFile();
+      } catch (IOException ignored) {
       }
     }
   }
 
-  private boolean canDowncastTo(CtMethod source, CtMethod dest) {
+  private void makeGeneric(CtClass target) throws NotFoundException, CannotCompileException {
+    ArrayList<CtMethod> methods = Arrays.stream(target.getDeclaredMethods())
+        .sorted((o1, o2) -> agree(o1, o2) ? -1 : 1) // Least specific first
+        .collect(Collectors.toCollection(ArrayList::new));
+
+    for (CtMethod method : methods) {
+      injectBestMethod(method, SUFFIX_PRIMARY);
+    }
+  }
+
+  private void injectBestMethod(CtMethod method, String suffix)
+      throws NotFoundException, CannotCompileException {
+    CtMethod newMethod = CtNewMethod.copy(method, method.getDeclaringClass(), null);
+    StringBuilder template = new StringBuilder();
+    StringBuilder call = new StringBuilder(ReflectiveMagic.class.getName() + ".invoke(");
+
+    method.setName(method.getName() + "$" + suffix);
+    if (Modifier.isStatic(newMethod.getModifiers())) {
+      call.append("$class");
+    } else {
+      call.append("$0");
+    }
+    call.append(", \"").append(method.getName()).append("\", new Object[]{");
+
+    CtClass[] params = newMethod.getParameterTypes();
+    for (int i = 0; i < params.length; i++) {
+      if (i > 0) {
+        call.append(", ");
+      }
+      call.append("$").append(i + 1);
+    }
+    call.append("})");
+
+    if (newMethod.getReturnType() != CtClass.voidType) {
+      template.append("return ($r)");
+    }
+    template.append(call.toString()).append(";");
+
+    // System.out.println(template.toString());
+    newMethod.setBody(template.toString());
+    method.getDeclaringClass().addMethod(newMethod);
+  }
+
+  private boolean agree(CtMethod source, CtMethod dest) {
     try {
       CtClass[] srcParams = source.getParameterTypes();
       CtClass[] dstParams = dest.getParameterTypes();
@@ -101,39 +129,5 @@ class GenericFunctionTranslator implements Translator {
     }
 
     return true;
-  }
-
-  private void instrument(CtMethod caller, CtMethod target, List<CtMethod> methods)
-      throws NotFoundException, CannotCompileException {
-    StringBuilder template = new StringBuilder("if (");
-    StringBuilder call = new StringBuilder(target.getName() + "(");
-
-    CtClass[] params = target.getParameterTypes();
-    for (int i = 0; i < params.length; i++) {
-      String arg = params[i].getName();
-
-      if (i > 0) {
-        template.append(" && ");
-        call.append(", ");
-      }
-      template.append("$").append(i + 1).append(" instanceof ").append(arg);
-      call.append("(").append(arg).append(")").append("$").append(i + 1);
-    }
-    template.append(") {\n  ");
-    call.append(")");
-
-    if (caller.getReturnType().equals(CtClass.voidType)) {
-      template.append(call.toString()).append("; return");
-    } else {
-      template.append("return ");
-      if (!target.getReturnType().equals(CtClass.voidType)) {
-        template.append(call.toString());
-      } else {
-        template.append("null");
-      }
-    }
-    template.append(";\n}");
-
-    caller.insertBefore(template.toString());
   }
 }
