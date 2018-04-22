@@ -24,9 +24,9 @@
 
 package ist.meic.pa.GenericFunctions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.LinkedList;
+import java.util.List;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -38,7 +38,9 @@ import javassist.Translator;
 
 public class GenericFunctionTranslator implements Translator {
 
-  private static final String SUFFIX_PRIMARY = "primary";
+  private static final String SUFFIX_PRIMARY = "$primary";
+  private static final String SUFFIX_BEFORE = "$before";
+  private static final String SUFFIX_AFTER = "$after";
 
   @Override
   public void start(ClassPool pool) {
@@ -50,41 +52,107 @@ public class GenericFunctionTranslator implements Translator {
       throws NotFoundException, CannotCompileException {
     CtClass target = pool.get(className);
     if (target.hasAnnotation(GenericFunction.class)) {
-      // long start = System.currentTimeMillis();
       makeGeneric(target);
-      // System.out.println(System.currentTimeMillis() - start);
-      // try {
-      //   target.writeFile();
-      // } catch (IOException ignored) {
-      // }
     }
   }
 
   private void makeGeneric(CtClass target) throws NotFoundException, CannotCompileException {
-    ArrayList<CtMethod> methods = Arrays.stream(target.getDeclaredMethods())
-        .sorted((o1, o2) -> agree(o1, o2) ? -1 : 1) // Least specific first
-        .collect(Collectors.toCollection(ArrayList::new));
+    CtMethod[] methods = target.getDeclaredMethods();
+    Arrays.sort(methods, (m1, m2) -> agree(m1, m2) ? 1 : -1); // Least specific first
+
+    List<CtMethod> befores = new LinkedList<>();
+    List<CtMethod> primaries = new LinkedList<>();
+    List<CtMethod> afters = new LinkedList<>();
 
     for (CtMethod method : methods) {
-      injectBestMethod(method, SUFFIX_PRIMARY);
+      CtMethod newMethod = CtNewMethod.copy(method, method.getDeclaringClass(), null);
+      //region Distinguish and rename original methods
+      String suffix = SUFFIX_PRIMARY;
+      boolean isPrimary = true;
+
+      for (Object anno : method.getAvailableAnnotations()) {
+        if (anno instanceof BeforeMethod) {
+          isPrimary = false;
+          suffix = SUFFIX_BEFORE;
+          befores.add(method);
+        } else if (anno instanceof AfterMethod) {
+          isPrimary = false;
+          suffix = SUFFIX_AFTER;
+          afters.add(method);
+        }
+      }
+
+      if (isPrimary) {
+        primaries.add(method);
+      }
+
+      method.setName(method.getName() + suffix);
+      //endregion
+      //region Inject 'invoke' into new method's body and add it to the class
+      newMethod.setBody(invokeMethodTemplate(newMethod));
+      target.addMethod(newMethod);
+      //endregion
     }
+    //region For every primary, insert every 'before' and 'after' methods
+    for (CtMethod primary : primaries) {
+      for (CtMethod before : befores) {
+        primary.insertBefore(methodCallTemplate(before));
+      }
+      for (CtMethod after : afters) {
+        primary.insertAfter(methodCallTemplate(after));
+      }
+    }
+    //endregion
   }
 
-  private void injectBestMethod(CtMethod method, String suffix)
-      throws NotFoundException, CannotCompileException {
-    CtMethod newMethod = CtNewMethod.copy(method, method.getDeclaringClass(), null);
+  private boolean agree(CtMethod m1, CtMethod m2) {
+    try {
+      CtClass[] params1 = m1.getParameterTypes();
+      CtClass[] params2 = m2.getParameterTypes();
+      if (params1.length != params2.length) {
+        return false;
+      }
+
+      for (int i = 0; i < params1.length; i++) {
+        CtClass p1 = params1[i];
+        CtClass p2 = params2[i];
+        if (p1.isArray() && p2.isArray()) {
+          p1 = p1.getComponentType();
+          p2 = p2.getComponentType();
+        }
+        if (p1.isArray() || p2.isArray()) {
+          return false;
+        }
+
+        if (!p1.equals(p2)) {
+          for (CtClass iface : p1.getInterfaces()) {
+            if (iface.subclassOf(p2)) {
+              return true;
+            }
+          }
+          return p1.subclassOf(p2);
+        }
+      }
+    } catch (NotFoundException nfe) {
+      throw new RuntimeException(nfe);
+    }
+
+    return true;
+  }
+
+  private String invokeMethodTemplate(CtMethod method)
+      throws NotFoundException {
     StringBuilder template = new StringBuilder();
     StringBuilder call = new StringBuilder(ReflectiveMagic.class.getName() + ".invoke(");
 
-    method.setName(method.getName() + "$" + suffix);
-    if (Modifier.isStatic(newMethod.getModifiers())) {
+    if (Modifier.isStatic(method.getModifiers())) {
       call.append("$class");
     } else {
       call.append("$0");
     }
-    call.append(", \"").append(method.getName()).append("\", new Object[]{");
+    call.append(", \"").append(method.getName()).append(SUFFIX_PRIMARY).append("\", new Object[]{");
 
-    CtClass[] params = newMethod.getParameterTypes();
+    CtClass[] params = method.getParameterTypes();
     for (int i = 0; i < params.length; i++) {
       if (i > 0) {
         call.append(", ");
@@ -93,40 +161,35 @@ public class GenericFunctionTranslator implements Translator {
     }
     call.append("})");
 
-    if (newMethod.getReturnType() != CtClass.voidType) {
+    if (method.getReturnType() != CtClass.voidType) {
       template.append("return ($r)");
     }
     template.append(call.toString()).append(";");
 
-    // System.out.println(template.toString());
-    newMethod.setBody(template.toString());
-    method.getDeclaringClass().addMethod(newMethod);
+    return template.toString();
   }
 
-  private boolean agree(CtMethod source, CtMethod dest) {
-    try {
-      CtClass[] srcParams = source.getParameterTypes();
-      CtClass[] dstParams = dest.getParameterTypes();
-      if (srcParams.length != dstParams.length) {
-        return false;
+  private String methodCallTemplate(CtMethod method) throws NotFoundException {
+    StringBuilder template = new StringBuilder("if (");
+    StringBuilder call = new StringBuilder(method.getName())
+        .append("(");
+
+    CtClass[] params = method.getParameterTypes();
+    //region Build if-instanceof cascade and the call's casted arguments
+    for (int i = 0; i < params.length; i++) {
+      if (i > 0) {
+        template.append(" && ");
+        call.append(", ");
       }
 
-      for (int i = 0; i < srcParams.length; i++) {
-        CtClass src = srcParams[i];
-        CtClass dst = dstParams[i];
-        if (src.isArray() && dst.isArray()) {
-          src = src.getComponentType();
-          dst = dst.getComponentType();
-        }
-
-        if (!src.equals(dst) && !src.getName().equals(Object.class.getName())) {
-          return dst.subclassOf(src);
-        }
-      }
-    } catch (NotFoundException nfe) {
-      throw new RuntimeException(nfe);
+      String name = params[i].getName();
+      template.append("$").append(i + 1).append(" instanceof ").append(name);
+      call.append("(").append(name).append(")").append("$").append(i + 1);
     }
+    //endregion
+    call.append(")");
+    template.append(") {").append(call.toString()).append(";}");
 
-    return true;
+    return template.toString();
   }
 }
