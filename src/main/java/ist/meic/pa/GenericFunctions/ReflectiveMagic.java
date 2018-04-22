@@ -67,11 +67,22 @@ public class ReflectiveMagic {
     }
 
     try {
-      Method method = bestMethod((Class<?>) receiver, name, argTypes);
+      Method method = bestMethod(((Class<?>) receiver), name, argTypes);
       return method.invoke(receiver, args);
     } catch (ReflectiveOperationException roe) {
-      throw new RuntimeException(roe.getMessage());
+      String[] argNames = Arrays.stream(args)
+          .map(Object::getClass)
+          .map(Class::getSimpleName)
+          .toArray(String[]::new);
+
+      System.err.println("No applicable method: When calling '"
+          + roe.getMessage() + "' with ("
+          + String.join(",", argNames) + "), no method is applicable.");
+      System.err.println("No restarts available (this isn't as good as CLOS)");
+      System.exit(1);
     }
+
+    return null; // Never reached
   }
 
   private static Method bestMethod(Class<?> type, String name, Class[] argTypes)
@@ -107,9 +118,7 @@ public class ReflectiveMagic {
         if (i == 0) {
           int dollarPos = name.indexOf('$');
           String simpleName = name.substring(0, dollarPos > 0 ? dollarPos : name.length());
-
-          throw new NoSuchMethodException(
-              "No applicable method: " + type.getSimpleName() + "." + simpleName);
+          throw new NoSuchMethodException(type.getSimpleName() + "." + simpleName);
         }
         //endregion
         //region Otherwise, proceed to the previous argument
