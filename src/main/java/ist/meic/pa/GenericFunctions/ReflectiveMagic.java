@@ -70,7 +70,7 @@ public class ReflectiveMagic {
       Method method = bestMethod((Class<?>) receiver, name, argTypes);
       return method.invoke(receiver, args);
     } catch (ReflectiveOperationException roe) {
-      throw new RuntimeException(roe);
+      throw new RuntimeException(roe.getMessage());
     }
   }
 
@@ -94,22 +94,24 @@ public class ReflectiveMagic {
       } catch (NoSuchMethodException | SecurityException ignored) {
       }
       ///endregion
-
       ///region Otherwise, check where the last Object is
       int i = argTypes.length - 1;
       while (i > 0 && argTypes[i] == Object.class) {
         argTypes[i--] = origTypes[i]; // reset the current type
       }
-      //endregion
 
       Class<?> current = argTypes[i];
+      //endregion
       if (current == Object.class) {
         //region If it's the first, it means a method couldn't be found
         if (i == 0) {
-          throw new NoSuchMethodException("No applicable method: " + name);
+          int dollarPos = name.indexOf('$');
+          String simpleName = name.substring(0, dollarPos > 0 ? dollarPos : name.length());
+
+          throw new NoSuchMethodException(
+              "No applicable method: " + type.getSimpleName() + "." + simpleName);
         }
         //endregion
-
         //region Otherwise, proceed to the previous argument
         argTypes[i] = origTypes[i];
         current = argTypes[--i];
@@ -124,7 +126,6 @@ public class ReflectiveMagic {
           argTypes[i] = wrapperPrimitiveMap.get(current);
         }
         //endregion
-
         //region If so, try invoking it again
         if (argTypes[i] != current) {
           try {
@@ -133,15 +134,16 @@ public class ReflectiveMagic {
           }
         }
         //endregion
-
         //region If it isn't or we couldn't find it, try crawling the interface hierarchy
-        Method method = tryInterfaces(type, name, origTypes, argTypes, i);
-        if (method != null) {
-          return method;
+        for (Class<?> iface : current.getInterfaces()) {
+          argTypes[i] = iface;
+          Method method = bestMethod(type, name, origTypes, argTypes);
+          if (method != null) {
+            return method;
+          }
         }
         //endregion
       }
-
       //region Ultimately, if all else failed, crawl up class hierarchy
       Class<?> parent = current.getSuperclass();
 
@@ -183,20 +185,5 @@ public class ReflectiveMagic {
         throw new RuntimeException(cnfe);
       }
     }
-  }
-
-  private static Method tryInterfaces(Class<?> type, String name, Class[] origTypes,
-      Class[] argTypes, int i) throws NoSuchMethodException {
-    Class<?> current = argTypes[i];
-    Method method;
-
-    for (Class<?> iface : current.getInterfaces()) {
-      argTypes[i] = iface;
-      method = bestMethod(type, name, origTypes, argTypes);
-      if (method != null) {
-        return method;
-      }
-    }
-    return null;
   }
 }
