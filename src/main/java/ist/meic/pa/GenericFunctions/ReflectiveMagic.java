@@ -108,7 +108,7 @@ public class ReflectiveMagic {
       ///region Otherwise, check where the last Object is
       int i = argTypes.length - 1;
       while (i > 0 && argTypes[i] == Object.class) {
-        argTypes[i--] = origTypes[i]; // reset the current type
+        argTypes[i] = origTypes[i--]; // reset the current type
       }
 
       Class<?> current = argTypes[i];
