@@ -26,8 +26,37 @@ package ist.meic.pa.GenericFunctions;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class ReflectiveMagic {
+
+  private static final Map<Class<?>, Class<?>> primitiveWrapperMap;
+  private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap;
+
+  static {
+    final Map<Class<?>, Class<?>> pw = new HashMap<>();
+    pw.put(Boolean.TYPE, Boolean.class);
+    pw.put(Character.TYPE, Character.class);
+    pw.put(Byte.TYPE, Byte.class);
+    pw.put(Short.TYPE, Short.class);
+    pw.put(Integer.TYPE, Integer.class);
+    pw.put(Long.TYPE, Long.class);
+    pw.put(Float.TYPE, Float.class);
+    pw.put(Double.TYPE, Double.class);
+
+    primitiveWrapperMap = Collections.unmodifiableMap(pw);
+  }
+
+  static {
+    Map<Class<?>, Class<?>> wp = new HashMap<>();
+    for (Entry<Class<?>, Class<?>> entry : primitiveWrapperMap.entrySet()) {
+      wp.put(entry.getValue(), entry.getKey());
+    }
+    wrapperPrimitiveMap = Collections.unmodifiableMap(wp);
+  }
 
   @SuppressWarnings("unused")
   public static Object invoke(Object receiver, String name, Object... args) {
@@ -55,55 +84,76 @@ public class ReflectiveMagic {
     try {
       return type.getMethod(name, argTypes);
     } catch (NoSuchMethodException nsme) {
-      Method method = null;
+      ///region Try getting declared private method and call that
       try {
-        method = type.getDeclaredMethod(name, argTypes);
+        Method method = type.getDeclaredMethod(name, argTypes);
         if (!method.isAccessible()) {
-          try {
-            method.setAccessible(true);
-            return method;
-          } catch (SecurityException ignored) {
-          }
+          method.setAccessible(true);
         }
-      } catch (NoSuchMethodException ignored) {
+        return method;
+      } catch (NoSuchMethodException | SecurityException ignored) {
       }
+      ///endregion
 
+      ///region Otherwise, check where the last Object is
       int i = argTypes.length - 1;
       while (i > 0 && argTypes[i] == Object.class) {
-        i--;
+        argTypes[i--] = origTypes[i]; // reset the current type
       }
+      //endregion
 
       Class<?> current = argTypes[i];
       if (current == Object.class) {
+        //region If it's the first, it means a method couldn't be found
         if (i == 0) {
-          throw new NoSuchMethodException(name + ": " + nsme.getMessage());
-        } else {
-          current = argTypes[i - 1];
-          argTypes[i] = origTypes[i];
-
-          if (current.isArray()) {
-            argTypes[i - 1] = arraySuper(current);
-          }
-          return bestMethod(type, name, origTypes, argTypes);
+          throw new NoSuchMethodException("No applicable method: " + name);
         }
+        //endregion
+
+        //region Otherwise, proceed to the previous argument
+        argTypes[i] = origTypes[i];
+        current = argTypes[--i];
+        //endregion
+      } else {
+        //region Check if it is an array, primitive or wrapper and convert it
+        if (current.isArray()) {
+          argTypes[i] = arraySuper(current);
+        } else if (current.isPrimitive()) {
+          argTypes[i] = primitiveWrapperMap.get(current);
+        } else if (wrapperPrimitiveMap.containsKey(current)) {
+          argTypes[i] = wrapperPrimitiveMap.get(current);
+        }
+        //endregion
+
+        //region If so, try invoking it again
+        if (argTypes[i] != current) {
+          try {
+            return type.getMethod(name, argTypes);
+          } catch (NoSuchMethodException ignored) {
+          }
+        }
+        //endregion
+
+        //region If it isn't or we couldn't find it, try crawling the interface hierarchy
+        Method method = tryInterfaces(type, name, origTypes, argTypes, i);
+        if (method != null) {
+          return method;
+        }
+        //endregion
       }
 
-      if (current.isArray()) {
-        argTypes[i] = arraySuper(current);
-      } else if (current.isPrimitive()) {
-        method = tryBoxing(type, name, argTypes, i);
-      } else if (isBoxed(current)) {
-        method = tryUnboxing(type, name, argTypes, i);
-      } else {
-        method = tryInterfaces(type, name, argTypes, i);
-      }
+      //region Ultimately, if all else failed, crawl up class hierarchy
+      Class<?> parent = current.getSuperclass();
 
-      if (method != null) {
-        return method;
-      } else {
-        argTypes[i] = current.getSuperclass();
+      if (parent != null) {
+        argTypes[i] = parent;
         return bestMethod(type, name, origTypes, argTypes);
+      } else {
+        // To break from interface crawling loop
+        argTypes[i] = current;
+        return null;
       }
+      //endregion
     }
   }
 
@@ -122,91 +172,31 @@ public class ReflectiveMagic {
         sb.append("[");
       }
 
+      if (current.isPrimitive()) {
+        current = primitiveWrapperMap.get(current);
+      }
+
+      sb.append("L").append(current.getSuperclass().getName()).append(";");
       try {
-        String className = sb.append(current.getSuperclass().getName()).toString();
-        return Class.forName(className);
+        return Class.forName(sb.toString());
       } catch (ClassNotFoundException cnfe) {
         throw new RuntimeException(cnfe);
       }
     }
   }
 
-  private static Method tryBoxing(Class<?> type, String name, Class[] argTypes, int i) {
-    Class<?> argType = argTypes[i];
-    if (argType == boolean.class) {
-      argType = Boolean.class;
-    } else if (argType == char.class) {
-      argType = Character.class;
-    } else if (argType == byte.class) {
-      argType = Byte.class;
-    } else if (argType == short.class) {
-      argType = Short.class;
-    } else if (argType == int.class) {
-      argType = Integer.class;
-    } else if (argType == long.class) {
-      argType = Long.class;
-    } else if (argType == float.class) {
-      argType = Float.class;
-    } else if (argType == double.class) {
-      argType = Double.class;
-    }
-
-    argTypes[i] = argType;
-    try {
-      return type.getMethod(name, argTypes);
-    } catch (NoSuchMethodException e) {
-      return null;
-    }
-  }
-
-  private static Method tryUnboxing(Class<?> type, String name, Class[] argTypes, int i) {
-    Class<?> argType = argTypes[i];
-    if (argType == Boolean.class) {
-      argType = boolean.class;
-    } else if (argType == Character.class) {
-      argType = char.class;
-    } else if (argType == Byte.class) {
-      argType = byte.class;
-    } else if (argType == Short.class) {
-      argType = short.class;
-    } else if (argType == Integer.class) {
-      argType = int.class;
-    } else if (argType == Long.class) {
-      argType = long.class;
-    } else if (argType == Float.class) {
-      argType = float.class;
-    } else if (argType == Double.class) {
-      argType = double.class;
-    }
-
-    argTypes[i] = argType;
-    try {
-      return type.getMethod(name, argTypes);
-    } catch (NoSuchMethodException e) {
-      return null;
-    }
-  }
-
-  private static Method tryInterfaces(Class<?> type, String name, Class[] argTypes, int i) {
+  private static Method tryInterfaces(Class<?> type, String name, Class[] origTypes,
+      Class[] argTypes, int i) throws NoSuchMethodException {
     Class<?> current = argTypes[i];
+    Method method;
+
     for (Class<?> iface : current.getInterfaces()) {
       argTypes[i] = iface;
-      try {
-        return type.getMethod(name, argTypes);
-      } catch (NoSuchMethodException ignored) {
+      method = bestMethod(type, name, origTypes, argTypes);
+      if (method != null) {
+        return method;
       }
     }
     return null;
-  }
-
-  private static boolean isBoxed(Class<?> current) {
-    return current == Boolean.TYPE
-        || current == Character.TYPE
-        || current == Byte.TYPE
-        || current == Short.TYPE
-        || current == Integer.TYPE
-        || current == Long.TYPE
-        || current == Float.TYPE
-        || current == Double.TYPE; // This one is just an extra
   }
 }
