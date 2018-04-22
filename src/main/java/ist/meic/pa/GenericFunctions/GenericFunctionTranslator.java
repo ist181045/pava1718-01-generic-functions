@@ -70,12 +70,12 @@ public class GenericFunctionTranslator implements Translator {
       String suffix = SUFFIX_PRIMARY;
       boolean isPrimary = true;
 
-      for (Object anno : method.getAvailableAnnotations()) {
-        if (anno instanceof BeforeMethod) {
+      for (Object annotation : method.getAvailableAnnotations()) {
+        if (annotation instanceof BeforeMethod) {
           isPrimary = false;
           suffix = SUFFIX_BEFORE;
           befores.add(method);
-        } else if (anno instanceof AfterMethod) {
+        } else if (annotation instanceof AfterMethod) {
           isPrimary = false;
           suffix = SUFFIX_AFTER;
           afters.add(method);
