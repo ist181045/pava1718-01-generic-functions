@@ -95,6 +95,7 @@ public class ReflectiveMagic {
     try {
       return type.getMethod(name, argTypes);
     } catch (NoSuchMethodException nsme) {
+      // FIXME: Break this up a bit more, if possible.. too extensive
       ///region Try getting declared private method and call that
       try {
         Method method = type.getDeclaredMethod(name, argTypes);
