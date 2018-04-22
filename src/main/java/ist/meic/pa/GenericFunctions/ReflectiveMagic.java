@@ -55,6 +55,19 @@ public class ReflectiveMagic {
     try {
       return type.getMethod(name, argTypes);
     } catch (NoSuchMethodException nsme) {
+      Method method = null;
+      try {
+        method = type.getDeclaredMethod(name, argTypes);
+        if (!method.isAccessible()) {
+          try {
+            method.setAccessible(true);
+            return method;
+          } catch (SecurityException ignored) {
+          }
+        }
+      } catch (NoSuchMethodException ignored) {
+      }
+
       int i = argTypes.length - 1;
       while (i > 0 && argTypes[i] == Object.class) {
         i--;
@@ -75,7 +88,6 @@ public class ReflectiveMagic {
         }
       }
 
-      Method method = null;
       if (current.isArray()) {
         argTypes[i] = arraySuper(current);
       } else if (current.isPrimitive()) {
