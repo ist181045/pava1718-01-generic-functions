@@ -24,6 +24,7 @@
 
 package ist.meic.pa.GenericFunctions;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,26 +68,24 @@ public class GenericFunctionTranslator implements Translator {
     for (CtMethod method : methods) {
       CtMethod newMethod = CtNewMethod.copy(method, method.getDeclaringClass(), null);
       //region Distinguish and rename original methods
-      String suffix = SUFFIX_PRIMARY;
-      boolean isPrimary = true;
+      StringBuilder suffix = new StringBuilder();
 
       for (Object annotation : method.getAvailableAnnotations()) {
         if (annotation instanceof BeforeMethod) {
-          isPrimary = false;
-          suffix = SUFFIX_BEFORE;
+          suffix.append(SUFFIX_BEFORE);
           befores.add(method);
         } else if (annotation instanceof AfterMethod) {
-          isPrimary = false;
-          suffix = SUFFIX_AFTER;
+          suffix.append(SUFFIX_AFTER);
           afters.add(method);
         }
       }
 
-      if (isPrimary) {
+      if (suffix.length() == 0) {
+        suffix.append(SUFFIX_PRIMARY);
         primaries.add(method);
       }
 
-      method.setName(method.getName() + suffix);
+      method.setName(method.getName() + suffix.toString());
       //endregion
       //region Inject 'invoke' into new method's body and add it to the class
       newMethod.setBody(invokeMethodTemplate(newMethod));
