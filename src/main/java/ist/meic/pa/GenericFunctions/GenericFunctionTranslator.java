@@ -150,16 +150,7 @@ public class GenericFunctionTranslator implements Translator {
     } else {
       call.append("$0");
     }
-    call.append(", \"").append(method.getName()).append(SUFFIX_PRIMARY).append("\", new Object[]{");
-
-    CtClass[] params = method.getParameterTypes();
-    for (int i = 0; i < params.length; i++) {
-      if (i > 0) {
-        call.append(", ");
-      }
-      call.append("$").append(i + 1);
-    }
-    call.append("})");
+    call.append(", \"").append(method.getName()).append(SUFFIX_PRIMARY).append("\", $args)");
 
     if (method.getReturnType() != CtClass.voidType) {
       template.append("return ($r)");
