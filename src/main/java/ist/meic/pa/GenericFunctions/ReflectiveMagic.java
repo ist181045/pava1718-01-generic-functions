@@ -67,16 +67,6 @@ public class ReflectiveMagic {
       return type.getMethod(name, argTypes);
     } catch (NoSuchMethodException nsme) {
       // FIXME: Break this up a bit more, if possible.. too extensive
-      ///region Try getting declared private method and call that
-      try {
-        Method method = type.getDeclaredMethod(name, argTypes);
-        if (!method.isAccessible()) {
-          method.setAccessible(true);
-        }
-        return method;
-      } catch (NoSuchMethodException | SecurityException ignored) {
-      }
-      ///endregion
       ///region Otherwise, check where the last Object is
       int i = argTypes.length - 1;
       while (i > 0 && argTypes[i] == Object.class) {
