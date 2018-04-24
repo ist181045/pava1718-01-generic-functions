@@ -67,4 +67,32 @@ class ClassUtils {
   static Class<?> wrapperToPrimitive(Class<?> cls) {
     return wrapperPrimitiveMap.getOrDefault(cls, cls);
   }
+
+  static Class<?> arraySuperClass(Class<?> current) {
+    int depth = 0;
+    while (current.isArray()) {
+      current = current.getComponentType();
+      ++depth;
+    }
+
+    if (current == Object.class) {
+      return Object.class;
+    } else {
+      StringBuilder sb = new StringBuilder("[");
+      while (--depth > 0) {
+        sb.append("[");
+      }
+
+      if (current.isPrimitive()) {
+        current = primitiveToWrapper(current);
+      }
+
+      sb.append("L").append(current.getSuperclass().getName()).append(";");
+      try {
+        return Class.forName(sb.toString());
+      } catch (ClassNotFoundException cnfe) {
+        throw new RuntimeException(cnfe);
+      }
+    }
+  }
 }

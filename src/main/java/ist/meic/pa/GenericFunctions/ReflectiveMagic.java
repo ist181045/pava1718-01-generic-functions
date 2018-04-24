@@ -91,7 +91,7 @@ public class ReflectiveMagic {
         //region Check if it is an array, primitive or wrapper and convert it
         Class<?> converted = current;
         if (current.isArray()) {
-          converted = arraySuper(current);
+          converted = ClassUtils.arraySuperClass(current);
         } else if (current.isPrimitive()) {
           converted = ClassUtils.primitiveToWrapper(current);
         } else if (ClassUtils.isPrimitiveWrapper(current)) {
@@ -129,34 +129,6 @@ public class ReflectiveMagic {
         return null;
       }
       //endregion
-    }
-  }
-
-  private static Class<?> arraySuper(Class<?> current) {
-    int depth = 0;
-    while (current.isArray()) {
-      current = current.getComponentType();
-      ++depth;
-    }
-
-    if (current == Object.class) {
-      return Object.class;
-    } else {
-      StringBuilder sb = new StringBuilder("[");
-      while (--depth > 0) {
-        sb.append("[");
-      }
-
-      if (current.isPrimitive()) {
-        current = ClassUtils.primitiveToWrapper(current);
-      }
-
-      sb.append("L").append(current.getSuperclass().getName()).append(";");
-      try {
-        return Class.forName(sb.toString());
-      } catch (ClassNotFoundException cnfe) {
-        throw new RuntimeException(cnfe);
-      }
     }
   }
 }
