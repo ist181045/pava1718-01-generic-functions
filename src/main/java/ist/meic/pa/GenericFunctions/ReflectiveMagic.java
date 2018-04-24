@@ -89,23 +89,25 @@ public class ReflectiveMagic {
         //endregion
       } else {
         //region Check if it is an array, primitive or wrapper and convert it
+        Class<?> converted = current;
         if (current.isArray()) {
-          argTypes[i] = arraySuper(current);
+          converted = arraySuper(current);
         } else if (current.isPrimitive()) {
-          argTypes[i] = ClassUtils.primitiveToWrapper(current);
+          converted = ClassUtils.primitiveToWrapper(current);
         } else if (ClassUtils.isPrimitiveWrapper(current)) {
-          argTypes[i] = ClassUtils.wrapperToPrimitive(current);
+          converted = ClassUtils.wrapperToPrimitive(current);
         }
         //endregion
-        //region If so, try invoking it again
-        if (argTypes[i] != current) {
+        //region If a conversion happened, try getting the method with the converted type
+        if (current != converted) {
+          argTypes[i] = converted;
           try {
             return type.getMethod(name, argTypes);
           } catch (NoSuchMethodException ignored) {
           }
         }
         //endregion
-        //region If it isn't or we couldn't find it, try crawling the interface hierarchy
+        //region Otherwise, try crawling the interface hierarchy
         for (Class<?> iface : current.getInterfaces()) {
           argTypes[i] = iface;
           Method method = bestMethod(type, name, origTypes, argTypes);
