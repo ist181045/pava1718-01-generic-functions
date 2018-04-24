@@ -29,10 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class ClassUtils {
+class ClassUtils {
 
-  static final Map<Class<?>, Class<?>> wrapperPrimitiveMap;
-  static final Map<Class<?>, Class<?>> primitiveWrapperMap;
+  private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap;
+  private static final Map<Class<?>, Class<?>> primitiveWrapperMap;
 
   static {
     final Map<Class<?>, Class<?>> pw = new HashMap<>();
@@ -56,11 +56,11 @@ public class ClassUtils {
     wrapperPrimitiveMap = Collections.unmodifiableMap(wp);
   }
 
-  public static boolean isPrimitiveWrapper(Class<?> type) {
+  static boolean isPrimitiveWrapper(Class<?> type) {
     return wrapperPrimitiveMap.containsKey(type);
   }
 
-  public static Class<?> primitiveToWrapper(Class<?> cls) {
+  static Class<?> primitiveToWrapper(Class<?> cls) {
     Class<?> converted = cls;
     if (cls.isPrimitive()) {
       converted = primitiveWrapperMap.get(cls);
@@ -68,7 +68,7 @@ public class ClassUtils {
     return converted;
   }
 
-  public static Class<?> wrapperToPrimitive(Class<?> cls) {
+  static Class<?> wrapperToPrimitive(Class<?> cls) {
     Class<?> wrapper = cls;
     if (!cls.isPrimitive()) {
       wrapper = wrapperPrimitiveMap.getOrDefault(cls, cls);

@@ -146,7 +146,7 @@ public class ReflectiveMagic {
       }
 
       if (current.isPrimitive()) {
-        current = ClassUtils.primitiveWrapperMap.get(current);
+        current = ClassUtils.primitiveToWrapper(current);
       }
 
       sb.append("L").append(current.getSuperclass().getName()).append(";");
