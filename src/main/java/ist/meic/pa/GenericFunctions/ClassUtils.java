@@ -61,18 +61,10 @@ class ClassUtils {
   }
 
   static Class<?> primitiveToWrapper(Class<?> cls) {
-    Class<?> converted = cls;
-    if (cls.isPrimitive()) {
-      converted = primitiveWrapperMap.get(cls);
-    }
-    return converted;
+    return primitiveWrapperMap.getOrDefault(cls, cls);
   }
 
   static Class<?> wrapperToPrimitive(Class<?> cls) {
-    Class<?> wrapper = cls;
-    if (!cls.isPrimitive()) {
-      wrapper = wrapperPrimitiveMap.getOrDefault(cls, cls);
-    }
-    return wrapper;
+    return wrapperPrimitiveMap.getOrDefault(cls, cls);
   }
 }
