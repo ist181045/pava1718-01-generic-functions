@@ -26,37 +26,8 @@ package ist.meic.pa.GenericFunctions;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 public class ReflectiveMagic {
-
-  private static final Map<Class<?>, Class<?>> primitiveWrapperMap;
-  private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap;
-
-  static {
-    final Map<Class<?>, Class<?>> pw = new HashMap<>();
-    pw.put(Boolean.TYPE, Boolean.class);
-    pw.put(Character.TYPE, Character.class);
-    pw.put(Byte.TYPE, Byte.class);
-    pw.put(Short.TYPE, Short.class);
-    pw.put(Integer.TYPE, Integer.class);
-    pw.put(Long.TYPE, Long.class);
-    pw.put(Float.TYPE, Float.class);
-    pw.put(Double.TYPE, Double.class);
-
-    primitiveWrapperMap = Collections.unmodifiableMap(pw);
-  }
-
-  static {
-    Map<Class<?>, Class<?>> wp = new HashMap<>();
-    for (Entry<Class<?>, Class<?>> entry : primitiveWrapperMap.entrySet()) {
-      wp.put(entry.getValue(), entry.getKey());
-    }
-    wrapperPrimitiveMap = Collections.unmodifiableMap(wp);
-  }
 
   @SuppressWarnings("unused")
   public static Object invoke(Object receiver, String name, Object... args) {
@@ -131,9 +102,9 @@ public class ReflectiveMagic {
         if (current.isArray()) {
           argTypes[i] = arraySuper(current);
         } else if (current.isPrimitive()) {
-          argTypes[i] = primitiveWrapperMap.get(current);
-        } else if (wrapperPrimitiveMap.containsKey(current)) {
-          argTypes[i] = wrapperPrimitiveMap.get(current);
+          argTypes[i] = ClassUtils.primitiveToWrapper(current);
+        } else if (ClassUtils.isPrimitiveWrapper(current)) {
+          argTypes[i] = ClassUtils.wrapperToPrimitive(current);
         }
         //endregion
         //region If so, try invoking it again
@@ -185,7 +156,7 @@ public class ReflectiveMagic {
       }
 
       if (current.isPrimitive()) {
-        current = primitiveWrapperMap.get(current);
+        current = ClassUtils.primitiveWrapperMap.get(current);
       }
 
       sb.append("L").append(current.getSuperclass().getName()).append(";");
