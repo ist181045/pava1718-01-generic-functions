@@ -31,7 +31,7 @@ mainClassName = 'ist.meic.pa.GenericFunctions.WithGenericFunctions'
 run {
   main = mainClassName
   args = [
-      'ist.meic.pa.GenericFunctions.internal.test.TestZ',
+      'ist.meic.pa.GenericFunctions.internal.test.Test#',
   ]
 }
 
