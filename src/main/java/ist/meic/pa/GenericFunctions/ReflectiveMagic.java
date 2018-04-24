@@ -41,6 +41,7 @@ public class ReflectiveMagic {
       Method method = bestMethod(((Class<?>) receiver), name, argTypes);
       return method.invoke(receiver, args);
     } catch (ReflectiveOperationException roe) {
+      //region Print out error message
       String[] argNames = Arrays.stream(args)
           .map(Object::getClass)
           .map(Class::getSimpleName)
@@ -50,6 +51,7 @@ public class ReflectiveMagic {
           + roe.getMessage() + "' with ("
           + String.join(",", argNames) + "), no method is applicable.");
       System.err.println("No restarts available (this isn't as good as CLOS)");
+      //endregion
       System.exit(1);
     }
 
@@ -66,8 +68,7 @@ public class ReflectiveMagic {
     try {
       return type.getMethod(name, argTypes);
     } catch (NoSuchMethodException nsme) {
-      // FIXME: Break this up a bit more, if possible.. too extensive
-      ///region Otherwise, check where the last Object is
+      ///region Check where the last Object is
       int i = argTypes.length - 1;
       while (i > 0 && argTypes[i] == Object.class) {
         argTypes[i] = origTypes[i--]; // reset the current type

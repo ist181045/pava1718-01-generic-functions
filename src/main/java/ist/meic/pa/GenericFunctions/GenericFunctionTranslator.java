@@ -103,17 +103,19 @@ public class GenericFunctionTranslator implements Translator {
     //endregion
   }
 
-  private boolean agree(CtMethod m1, CtMethod m2) {
+  private boolean agree(CtMethod m1, CtMethod m2)   {
     try {
       CtClass[] params1 = m1.getParameterTypes();
       CtClass[] params2 = m2.getParameterTypes();
+      //region Different parameter arity => don't agree
       if (params1.length != params2.length) {
         return false;
       }
-
+      //endregion
       for (int i = 0; i < params1.length; i++) {
         CtClass p1 = params1[i];
         CtClass p2 = params2[i];
+        //region p1 xor p2 are arrays => don't agree
         if (p1.isArray() && p2.isArray()) {
           p1 = p1.getComponentType();
           p2 = p2.getComponentType();
@@ -121,21 +123,26 @@ public class GenericFunctionTranslator implements Translator {
         if (p1.isArray() || p2.isArray()) {
           return false;
         }
-
+        //endregion
         if (!p1.equals(p2)) {
+          //region One of p1's interfaces is a subclass of p2 => agree
           for (CtClass iface : p1.getInterfaces()) {
             if (iface.subclassOf(p2)) {
               return true;
             }
           }
+          //endregion
+          //region p1 is subclass of p2 => agree
           return p1.subclassOf(p2);
+          //endregion
         }
       }
     } catch (NotFoundException nfe) {
       throw new RuntimeException(nfe);
     }
-
+    //region They're all equal => agree
     return true;
+    //endregion
   }
 
   private String invokeMethodTemplate(CtMethod method)
